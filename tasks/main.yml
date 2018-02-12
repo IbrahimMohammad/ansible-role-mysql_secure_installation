@@ -1,0 +1,40 @@
+---
+# tasks file for ansible-role-mysql_secure_installation
+
+- name: add mysql python support
+  yum: name=MySQL-python state=installed
+- name: 1. set mysql root pass
+  mysql_user:
+      login_user: root
+      login_password: "{{ msi-mysql_root_pass }}"
+      user: root
+      host_all: yes
+      password: "{{ msi-new_mysql_root_pass }}"
+- name: 2. disable remote root login
+  mysql_user:
+      login_user: root
+      login_password: "{{ msi-new_mysql_root_pass }}"
+      user: root
+      host: "{{ ansible_fqdn | lower }}"
+      state: absent
+- name: 3. remove anonymous users
+  mysql_user:
+      login_user: root
+      login_password: "{{ msi-new_mysql_root_pass }}"
+      user: ''
+      host_all: yes
+      state: absent
+- name: 4. remove test database
+  mysql_db: 
+      login_user: root
+      login_password: "{{ msi-new_mysql_root_pass }}"
+      db: test
+      state: absent
+  register: remove_testdb
+- name: 4.1 remove test database priviledges
+  block:
+    - shell: >
+        mysql -u root -p{{ new_mysql_root_pass }} 
+        -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'"
+    - shell: mysql -u root -p{{ new_mysql_root_pass }} -e "FLUSH PRIVILEGES"
+  when: remove_testdb|changed
