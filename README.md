@@ -36,7 +36,7 @@ Example Playbook
   vars_files:
       - "{{ playbook_dir }}/sec_vars.yml" # ansible-vault secured variables file
   roles:
-      - role: IBRAHIMMOHAMMAD.mysql_secure_installation
+      - role: IbrahimMohammad.mysql_secure_installation
 ```
 
 License
